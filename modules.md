@@ -66,19 +66,27 @@ All modules talk to one deployed backend and role-based login works.
 ## Module 3: Risk Prediction Models
 
 **Owner:** _Name_
-**Goal:** Predict neighbourhood-level risk for the chosen hazards.
+**Goal:** Predict neighbourhood-level risk for the chosen hazards, using plain Python scripts only (no notebooks).
 
 ### Responsibilities
-- Flood/waterlogging model (XGBoost or Random Forest) using rainfall, elevation and past events
-- Landslide model using rainfall, slope and soil
-- One more hazard: forest fire (temperature, humidity, wind, dry spell) or heat/water shortage (rainfall deficit)
-- Pull live forecasts from Open-Meteo and combine with terrain data
-- Output Low / Medium / High with a short reason per area
+- `explore_data.py`: quick check of the datasets (shape, missing values, simple plots saved as images)
+- `features.py`: build model inputs (rainfall, elevation, slope, soil, past events)
+- `fetch_weather.py`: pull live forecasts from Open-Meteo
+- `train_flood.py`: flood/waterlogging model (XGBoost or Random Forest)
+- `train_landslide.py`: landslide model using rainfall, slope and soil
+- `train_fire_heat.py`: only if time remains (forest fire or heat/water shortage)
+- `predict.py`: output Low / Medium / High with a short reason per area
+- `api.py`: small `/risk` service the backend can call
+- `retrain.py`: optional, only if time remains
 - Record accuracy, precision/recall and limitations in `ml/RESULTS.md`
-- Retraining script that uses saved incidents (from Module 5)
+
+### How to work
+- Run each script with `python src/<script>.py`; save trained models as `.joblib` in `models/`
+- No Jupyter or notebooks needed. Optional: add `# %%` between code blocks to get "Run Cell" buttons in the IDE
+- Quick exploration can also be done in Google Colab, then move the final code into the `.py` files
 
 ### Deliverables
-- Trained models and a `/risk` service
+- Trained models and a working `/risk` service
 - Honest evaluation report
 
 ### Needs from others

@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+env/
+.venv/
+.env
+
+# Models and Data
+# Ignore downloaded raw datasets and trained models so they don't bloat the repo
+modules/module3-risk-models/models/*.joblib
+modules/module3-risk-models/data/raw/*.csv
+modules/module3-risk-models/data/processed/*.json
+modules/module3-risk-models/data/processed/*.png
+modules/module3-risk-models/data/processed/*.csv
+
+# Node (For Module 1 & 2)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp.*
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
