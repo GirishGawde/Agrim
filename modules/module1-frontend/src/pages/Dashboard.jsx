@@ -1,8 +1,52 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Map, AlertTriangle, ShieldAlert, Route, FileText, Home, ArrowRight, CloudRain, Flame } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Dashboard = () => {
+  const [alertsCount, setAlertsCount] = useState(0);
+  const [reportsCount, setReportsCount] = useState(0);
+  const [recentAlerts, setRecentAlerts] = useState([]);
+
+  useEffect(() => {
+    // Fetch alerts
+    fetch('http://127.0.0.1:8000/alerts/')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.length >= 0) {
+          setAlertsCount(data.length);
+          // take top 3
+          const top3 = data.slice(-3).reverse().map(a => {
+            let icon = ShieldAlert;
+            let color = '#3b82f6';
+            if (a.hazard_type === 'flood') { icon = CloudRain; color = '#3b82f6'; }
+            if (a.hazard_type === 'fire') { icon = Flame; color = '#f26b1d'; }
+            if (a.hazard_type === 'landslide') { icon = AlertTriangle; color = '#92400e'; }
+            if (a.hazard_type === 'roadblock') { icon = Route; color = '#7c3aed'; }
+            
+            return {
+              id: a.id,
+              icon: icon,
+              color: color,
+              text: a.message.substring(0, 50) + (a.message.length > 50 ? '...' : ''),
+              time: 'Recent'
+            };
+          });
+          setRecentAlerts(top3);
+        }
+      })
+      .catch(err => console.error(err));
+
+    // Fetch reports
+    fetch('http://127.0.0.1:8000/reports/')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.length >= 0) {
+          setReportsCount(data.length);
+        }
+      })
+      .catch(err => console.error(err));
+  }, []);
+
   const modules = [
     {
       path: '/map',
@@ -32,7 +76,7 @@ const Dashboard = () => {
       bgColor: '#fef2f2',
       borderColor: '#fecaca',
       desc: 'Official alerts in English, Konkani, Marathi & Hindi.',
-      tag: '2 New'
+      tag: alertsCount > 0 ? `${alertsCount} New` : null
     },
     {
       path: '/route',
@@ -54,12 +98,6 @@ const Dashboard = () => {
       desc: 'Your personalized action plan, emergency contacts & resources.',
       tag: null
     },
-  ];
-
-  const recentAlerts = [
-    { icon: CloudRain, color: '#3b82f6', text: 'Heavy rainfall warning — North Goa', time: '10 min ago' },
-    { icon: Flame, color: '#f26b1d', text: 'Fire risk elevated — Tiswadi Taluka', time: '2 hrs ago' },
-    { icon: AlertTriangle, color: '#ef4444', text: 'Patto road flooded — Citizen report', time: '3 hrs ago' },
   ];
 
   return (
@@ -102,9 +140,9 @@ const Dashboard = () => {
           {/* Stats row */}
           <div style={{ display: 'flex', gap: '2.5rem', marginTop: '2rem', flexWrap: 'wrap' }}>
             {[
-              { label: 'Active Alerts', value: '12', color: '#ef4444' },
+              { label: 'Active Alerts', value: alertsCount, color: '#ef4444' },
               { label: 'Volunteers Online', value: '48', color: '#5cb82b' },
-              { label: 'Reports Today', value: '7', color: '#f26b1d' },
+              { label: 'Reports Today', value: reportsCount, color: '#f26b1d' },
               { label: 'Shelters Open', value: '5', color: '#3b82f6' },
             ].map(s => (
               <div key={s.label}>

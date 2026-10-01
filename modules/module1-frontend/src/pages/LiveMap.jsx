@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Circle, Marker, Popup, CircleMarker } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -14,7 +14,32 @@ const FILTERS = ['All', 'Flood Zones', 'Landslides', 'Shelters', 'Blocked Roads'
 
 const LiveMap = () => {
   const [activeFilter, setActiveFilter] = useState('All');
+  const [riskData, setRiskData] = useState({ risk_level: 'Loading...', reason: 'Fetching real-time predictions...' });
+  const [mapMarkers, setMapMarkers] = useState([]);
   const position = [15.4909, 73.8278];
+
+  useEffect(() => {
+    // Fetch live risk prediction for Patto-Panaji (area_id = 1) from Module 2 Backend
+    fetch('http://127.0.0.1:8000/risk/1')
+      .then(res => res.json())
+      .then(data => {
+        setRiskData(data);
+      })
+      .catch(err => {
+        console.error("Error fetching risk:", err);
+        setRiskData({ risk_level: 'Unknown', reason: 'Failed to connect to risk service.' });
+      });
+
+    // Fetch active reports from backend
+    fetch('http://127.0.0.1:8000/reports/')
+      .then(res => res.json())
+      .then(data => {
+        // filter open/assigned reports with lat/lon
+        const active = data.filter(r => (r.status === 'Open' || r.status === 'Assigned') && r.latitude && r.longitude);
+        setMapMarkers(active);
+      })
+      .catch(err => console.error("Error fetching reports:", err));
+  }, []);
 
   return (
     <div style={{ background: '#f3f4ee', minHeight: '100vh', fontFamily: "'Inter', sans-serif", display: 'flex', flexDirection: 'column' }}>
@@ -57,28 +82,34 @@ const LiveMap = () => {
               attribution='&copy; OpenStreetMap'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-            {(activeFilter === 'All' || activeFilter === 'Flood Zones') && (
-              <>
-                <Circle center={[15.4950, 73.8300]} radius={800}
-                  pathOptions={{ color: '#ef4444', fillColor: '#ef4444', fillOpacity: 0.25, weight: 2 }}>
-                  <Popup><strong>Patto Area</strong><br />High Flood Risk</Popup>
-                </Circle>
-                <Circle center={[15.4860, 73.8350]} radius={400}
-                  pathOptions={{ color: '#f59e0b', fillColor: '#f59e0b', fillOpacity: 0.2, weight: 2 }}>
-                  <Popup><strong>Miramar</strong><br />Medium Flood Risk</Popup>
-                </Circle>
-              </>
-            )}
+            {/* Dynamic Markers from Backend */}
+            {mapMarkers.map(marker => {
+              const show = activeFilter === 'All' || 
+                           (activeFilter === 'Flood Zones' && marker.type === 'flood') ||
+                           (activeFilter === 'Landslides' && marker.type === 'landslide') ||
+                           (activeFilter === 'Blocked Roads' && marker.type === 'roadblock') ||
+                           (activeFilter === 'Fires' && marker.type === 'fire');
+              if (!show) return null;
+              
+              let color = '#ef4444'; // default red
+              if (marker.type === 'flood') color = '#3b82f6';
+              if (marker.type === 'landslide') color = '#92400e';
+              if (marker.type === 'roadblock') color = '#7c3aed';
+              if (marker.type === 'fire') color = '#f26b1d';
+
+              return (
+                <CircleMarker key={marker.id} center={[marker.latitude, marker.longitude]} radius={12}
+                  pathOptions={{ color: color, fillColor: color, fillOpacity: 0.6, weight: 2 }}>
+                  <Popup><strong>{marker.location || marker.type.toUpperCase()}</strong><br />{marker.description}</Popup>
+                </CircleMarker>
+              );
+            })}
+
+            {/* Hardcoded Shelters (until shelter API is built) */}
             {(activeFilter === 'All' || activeFilter === 'Shelters') && (
               <Marker position={[15.4800, 73.8200]}>
                 <Popup><strong>Community Hall</strong><br />Safe Shelter<br />Capacity: 50/200</Popup>
               </Marker>
-            )}
-            {(activeFilter === 'All' || activeFilter === 'Blocked Roads') && (
-              <CircleMarker center={[15.4920, 73.8270]} radius={12}
-                pathOptions={{ color: '#7c3aed', fillColor: '#7c3aed', fillOpacity: 0.6, weight: 2 }}>
-                <Popup><strong>NH-66 Block</strong><br />Road flooded, avoid area</Popup>
-              </CircleMarker>
             )}
           </MapContainer>
         </div>
@@ -101,11 +132,24 @@ const LiveMap = () => {
             ))}
           </div>
 
-          {/* Risk Summary */}
-          <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '12px', padding: '1.25rem' }}>
-            <h3 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#ef4444', marginBottom: '0.75rem' }}>⚠ Current Risk: HIGH</h3>
+          {/* Risk Summary (Live from Backend) */}
+          <div style={{ 
+            background: riskData.risk_level === 'High' ? '#fef2f2' : (riskData.risk_level === 'Medium' ? '#fffbeb' : '#f0fce8'), 
+            border: `1px solid ${riskData.risk_level === 'High' ? '#fecaca' : (riskData.risk_level === 'Medium' ? '#fde68a' : '#bbf7d0')}`, 
+            borderRadius: '12px', 
+            padding: '1.25rem' 
+          }}>
+            <h3 style={{ 
+              fontSize: '0.9rem', 
+              fontWeight: 700, 
+              color: riskData.risk_level === 'High' ? '#ef4444' : (riskData.risk_level === 'Medium' ? '#f59e0b' : '#5cb82b'), 
+              marginBottom: '0.75rem',
+              textTransform: 'uppercase'
+            }}>
+              ⚠ Current Risk: {riskData.risk_level}
+            </h3>
             <p style={{ fontSize: '0.82rem', color: '#555', lineHeight: 1.6, margin: 0 }}>
-              Patto-Panaji area is at high flood risk. 248mm rainfall recorded in last 6 hours. Predicted surge at 3PM.
+              {riskData.reason}
             </p>
           </div>
 
@@ -113,9 +157,9 @@ const LiveMap = () => {
           <div style={{ background: 'white', border: '1px solid #e0e2da', borderRadius: '12px', padding: '1.25rem', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
             <h3 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#333', marginBottom: '1rem' }}>Today's Reports</h3>
             {[
-              { label: 'Flood reports', count: 5, color: '#3b82f6' },
-              { label: 'Road blocks', count: 2, color: '#7c3aed' },
-              { label: 'Fires', count: 0, color: '#f26b1d' },
+              { label: 'Flood reports', count: mapMarkers.filter(m => m.type === 'flood').length, color: '#3b82f6' },
+              { label: 'Road blocks', count: mapMarkers.filter(m => m.type === 'roadblock' || m.type === 'blocked_road').length, color: '#7c3aed' },
+              { label: 'Fires', count: mapMarkers.filter(m => m.type === 'fire').length, color: '#f26b1d' },
             ].map(r => (
               <div key={r.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
                 <span style={{ fontSize: '0.83rem', color: '#666' }}>{r.label}</span>
