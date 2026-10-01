@@ -1,3 +1,9 @@
+# Environment & secrets
+.env
+.env.*
+!.env.example
+*.env
+
 # Python
 __pycache__/
 *.py[cod]
@@ -5,6 +11,9 @@ __pycache__/
 *.so
 .Python
 env/
+venv/
+.venv/
+ENV/
 build/
 develop-eggs/
 dist/
@@ -21,19 +30,26 @@ wheels/
 .installed.cfg
 *.egg
 
-# Virtual Environment
-venv/
-env/
-.venv/
-.env
+# Testing & caches
+.pytest_cache/
+.coverage
+htmlcov/
 
-# Models and Data
-# Ignore downloaded raw datasets and trained models so they don't bloat the repo
-modules/module3-risk-models/models/*.joblib
-modules/module3-risk-models/data/raw/*.csv
-modules/module3-risk-models/data/processed/*.json
-modules/module3-risk-models/data/processed/*.png
-modules/module3-risk-models/data/processed/*.csv
+# Local uploads
+uploads/
+
+# IDE & OS
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 
 # Node (For Module 1 & 2)
 node_modules/
@@ -42,11 +58,10 @@ yarn-debug.log*
 yarn-error.log*
 .pnp.*
 
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
+# Models and Data
+# Ignore downloaded raw datasets and trained models so they don't bloat the repo
+modules/module3-risk-models/models/*.joblib
+modules/module3-risk-models/data/raw/*.csv
+modules/module3-risk-models/data/processed/*.json
+modules/module3-risk-models/data/processed/*.png
+modules/module3-risk-models/data/processed/*.csv
