@@ -110,12 +110,8 @@ goa-community-resilience/
 │   │   │   ├── raw/                          # downloaded public datasets
 │   │   │   ├── processed/                    # cleaned training data
 │   │   │   └── README.md                     # source of every dataset
-│   │   ├── notebooks/
-│   │   │   ├── 01_explore_data.ipynb
-│   │   │   ├── 02_flood_model.ipynb
-│   │   │   ├── 03_landslide_model.ipynb
-│   │   │   └── 04_fire_or_heat_model.ipynb
 │   │   ├── src/
+│   │   │   ├── explore_data.py               # quick data check (plain script, no notebooks)
 │   │   │   ├── features.py                   # feature building
 │   │   │   ├── fetch_weather.py              # Open-Meteo live forecast
 │   │   │   ├── train_flood.py
@@ -202,6 +198,9 @@ goa-community-resilience/
     ├── run_all.sh                            # start all services
     └── seed_demo.sh                          # load synthetic demo data
 ```
+
+## Module 3 note
+Module 3 uses plain `.py` scripts only (no notebooks). Run any script with `python src/<script>.py`, for example `python src/train_flood.py`. Optional: add `# %%` between code blocks in a `.py` file to get "Run Cell" buttons in VS Code-based IDEs.
 
 ## Ownership rules
 - Edit only your own module folder. If you need a change elsewhere, ask the owner or raise a pull request.
