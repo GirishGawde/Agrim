@@ -1,0 +1,108 @@
+/* Design tokens — shared with Module 1's global.css palette */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── CSS Custom Properties ─────────────────────────────────── */
+:root {
+  --color-primary: #3b82f6;
+  --color-primary-dark: #1d4ed8;
+  --color-risk-low: #22c55e;
+  --color-risk-medium: #f59e0b;
+  --color-risk-high: #ef4444;
+  --sidebar-width: 240px;
+  --transition-speed: 200ms;
+}
+
+/* Dark theme (default for dashboard) */
+html { color-scheme: dark; }
+
+body {
+  @apply bg-surface text-slate-100 font-sans antialiased;
+  margin: 0;
+}
+
+/* Light theme override */
+html.light {
+  color-scheme: light;
+  --tw-bg-opacity: 1;
+}
+html.light body { @apply bg-slate-50 text-slate-900; }
+
+/* ─── Scrollbar ──────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { @apply bg-surface; }
+::-webkit-scrollbar-thumb { @apply bg-slate-600 rounded-full; }
+::-webkit-scrollbar-thumb:hover { @apply bg-slate-500; }
+
+/* ─── Reduced motion ─────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Low-bandwidth mode (set via JS class on <html>) */
+html.low-bw *, html.low-bw *::before, html.low-bw *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* ─── Focus ring (accessibility) ─────────────────────────────── */
+:focus-visible {
+  @apply outline-2 outline-offset-2 outline-primary-400;
+}
+
+/* ─── Leaflet overrides ───────────────────────────────────────── */
+.leaflet-container { @apply rounded-xl overflow-hidden; }
+
+/* ─── Inspira UI Animations & Styles ─────────────────────────── */
+@keyframes meteor {
+  0% {
+    transform: rotate(215deg) translateX(0);
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(215deg) translateX(-500px);
+    opacity: 0;
+  }
+}
+
+.animate-meteor-effect {
+  animation: meteor 5s linear infinite;
+}
+
+@keyframes border-beam-anim {
+  to {
+    offset-distance: 100%;
+  }
+}
+
+.animate-border-beam::after {
+  animation: border-beam-anim var(--duration, 12s) infinite linear;
+}
+
+@keyframes shimmer-btn-spin-around {
+  0% { transform: translateZ(0) rotate(0); }
+  15%, 35% { transform: translateZ(0) rotate(90deg); }
+  65%, 85% { transform: translateZ(0) rotate(270deg); }
+  100% { transform: translateZ(0) rotate(360deg); }
+}
+
+@keyframes shimmer-btn-shimmer-slide {
+  to { transform: translate(calc(100% - 0%), 0); }
+}
+
+.animate-shimmer-spin {
+  animation: shimmer-btn-spin-around var(--speed, 4s) infinite linear;
+}
+
+.animate-shimmer-slide {
+  animation: shimmer-btn-shimmer-slide var(--speed, 3s) ease-in-out infinite alternate;
+}
